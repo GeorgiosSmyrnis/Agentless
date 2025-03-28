@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+import os
+
 from agentless.repair.repair import construct_topn_file_context
 from agentless.util.compress_file import get_skeleton
 from agentless.util.postprocess_data import extract_code_blocks, extract_locs_for_files
@@ -11,7 +13,7 @@ from agentless.util.preprocess_data import (
     show_project_structure,
 )
 
-MAX_CONTEXT_LENGTH = 128000
+MAX_CONTEXT_LENGTH = int(os.environ.get("AGENTLESS_MAX_CONTEXT_LENGTH", "128000"))
 
 
 class FL(ABC):
@@ -586,7 +588,8 @@ Return just the locations wrapped with ```.
                 num_tokens_from_messages(message, self.model_name) >= MAX_CONTEXT_LENGTH
             )
 
-        while message_too_long(message) and len(coarse_locs) > 1:
+        # TODO: this reduces the number of locations to 0 in extreme cases, so probably not good
+        while message_too_long(message) and len(coarse_locs) > 0:
             self.logger.info(f"reducing to \n{len(coarse_locs)} files")
             coarse_locs.popitem()
             topn_content, file_loc_intervals = construct_topn_file_context(

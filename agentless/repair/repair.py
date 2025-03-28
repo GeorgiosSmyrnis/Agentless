@@ -345,6 +345,8 @@ def process_loc(loc, args, swe_bench_data, prev_o, write_lock=None):
 
     if "found_edit_locs" in loc:
         file_to_edit_locs = loc["found_edit_locs"]
+    else:
+        logger.warning(f"No file edit locations found for {instance_id}")
 
     topn_content, file_loc_intervals = construct_topn_file_context(
         file_to_edit_locs,
@@ -691,7 +693,7 @@ def post_process_repair(args):
                     file_loc_intervals[tmp_pred_file] = context_intervals
             except Exception as e:
                 logger.info(e)
-                print(e)
+                raise e
                 raw_output_text = ""
 
         if raw_output_text:
@@ -747,18 +749,11 @@ def main():
         "--model",
         type=str,
         default="gpt-4o-2024-05-13",
-        choices=[
-            "gpt-4o-2024-05-13",
-            "deepseek-coder",
-            "gpt-4o-mini-2024-07-18",
-            "claude-3-5-sonnet-20241022",
-        ],
     )
     parser.add_argument(
         "--backend",
         type=str,
         default="openai",
-        choices=["openai", "deepseek", "anthropic"],
     )
     parser.add_argument("--output_folder", type=str, required=True)
     parser.add_argument("--post_process", action="store_true")

@@ -18,12 +18,12 @@ from swebench.harness.constants import (
 )
 from swebench.harness.docker_build import build_env_images
 from swebench.harness.run_evaluation import get_dataset_from_preds, run_instance
-from swebench.harness.test_spec import (
+from swebench.harness.test_spec.test_spec import (
     TestSpec,
     make_env_script_list,
     make_repo_script_list,
 )
-from swebench.harness.utils import get_test_directives
+from swebench.harness.test_spec.python import get_test_directives
 from tqdm import tqdm
 
 OPEN_FILE_LIMIT = 4096
@@ -252,6 +252,13 @@ def make_regression_spec(instance: SWEbenchInstance) -> TestSpec:
         arch=arch,
         FAIL_TO_PASS=fail_to_pass,  # Remove the fail to pass cases
         PASS_TO_PASS=pass_to_pass,
+        language='py',
+        docker_specs= {
+            "pnpm_version": "9.5.0",
+            "node_version": "21.6.2",
+            "python_version": "3.9",
+        },
+        namespace='swebench'
     )
 
 
@@ -377,7 +384,7 @@ def run_reproduction_tests(
             }
 
     instances = get_dataset_from_preds(
-        dataset_name, split, instance_ids, predictions, run_id
+        dataset_name, split, instance_ids, predictions, run_id, rewrite_reports=False
     )
 
     if not instances:
@@ -523,7 +530,7 @@ def run_tests(
         }
 
     instances = get_dataset_from_preds(
-        dataset_name, split, instance_ids, predictions, run_id
+        dataset_name, split, instance_ids, predictions, run_id, rewrite_reports=False
     )
 
     print(f"Running {len(instances)} unevaluated instances...")

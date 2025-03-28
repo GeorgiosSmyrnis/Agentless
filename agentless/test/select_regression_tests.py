@@ -9,7 +9,7 @@ from agentless.util.api_requests import num_tokens_from_messages
 from agentless.util.model import make_model
 from agentless.util.utils import load_jsonl, setup_logger
 
-MAX_CONTEXT_LENGTH = 128000
+MAX_CONTEXT_LENGTH = int(os.environ.get("AGENTLESS_MAX_CONTEXT_LENGTH", "128000"))
 
 
 select_tests_prompt_template = """
@@ -174,18 +174,11 @@ def main():
         "--model",
         type=str,
         default="gpt-4o-2024-05-13",
-        choices=[
-            "gpt-4o-2024-05-13",
-            "deepseek-coder",
-            "gpt-4o-mini-2024-07-18",
-            "claude-3-5-sonnet-20241022",
-        ],
     )
     parser.add_argument(
         "--backend",
         type=str,
         default="openai",
-        choices=["openai", "deepseek", "anthropic"],
     )
     parser.add_argument("--output_folder", type=str, required=True)
     parser.add_argument("--target_id", type=str)

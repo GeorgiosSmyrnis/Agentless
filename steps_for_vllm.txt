@@ -1,0 +1,31 @@
+OK
+python agentless/fl/localize.py --file_level --output_folder results/swe-bench-lite/file_level --num_threads 50 --skip_existing --backend "vllm/http://0.0.0.0:8000/v1" --model "open-thoughts/OpenThinker-7B"
+
+OK
+python agentless/fl/localize.py --file_level --output_folder results/swe-bench-lite/file_level_irrelevant --irrelevant --num_threads 50 --skip_existing --backend "vllm/http://0.0.0.0:8000/v1" --model "open-thoughts/OpenThinker-7B"
+
+OK
+python agentless/fl/retrieve.py --index_type simple --filter_type given_files --filter_file results/swe-bench-lite/file_level_irrelevant/loc_outputs.jsonl --output_folder results/swe-bench-lite/retrievel_embedding --persist_dir embedding/swe-bench_simple --num_threads 50
+
+OK
+python agentless/fl/combine.py --retrieval_loc_file results/swe-bench-lite/retrievel_embedding/retrieve_locs.jsonl --model_loc_file results/swe-bench-lite/file_level/loc_outputs.jsonl --top_n 3 --output_folder results/swe-bench-lite/file_level_combined 
+
+
+OK
+python agentless/fl/localize.py --related_level --output_folder results/swe-bench-lite/related_elements --top_n 3 --compress_assign --compress --start_file results/swe-bench-lite/file_level_combined/combined_locs.jsonl --num_threads 50 --skip_existing --backend "vllm/http://0.0.0.0:8000/v1" --model "open-thoughts/OpenThinker-7B"
+
+OK - but needs larger model length
+export AGENTLESS_MAX_CONTEXT_LENGTH=32768
+python agentless/fl/localize.py --fine_grain_line_level --output_folder results/swe-bench-lite/edit_location_samples --top_n 3 --compress --temperature 0.8 --num_samples 4 --start_file results/swe-bench-lite/related_elements/loc_outputs.jsonl --num_threads 10 --skip_existing --backend "vllm/http://0.0.0.0:8000/v1" --model "open-thoughts/OpenThinker-7B"
+
+
+python agentless/fl/localize.py --merge --output_folder results/swe-bench-lite/edit_location_individual --top_n 3 --num_samples 4 --start_file results/swe-bench-lite/edit_location_samples/loc_outputs.jsonl --backend "vllm/http://0.0.0.0:8000/v1" --model "open-thoughts/OpenThinker-7B"
+
+
+# Repair
+
+python agentless/repair/repair.py --loc_file results/swe-bench-lite/edit_location_individual/loc_merged_0-0_outputs.jsonl --output_folder results/swe-bench-lite/repair_sample_1 --loc_interval --top_n=3 --context_window=10 --max_samples 10  --cot --diff_format --gen_and_process --num_threads 10 --backend "vllm/http://0.0.0.0:8000/v1" --model "open-thoughts/OpenThinker-7B"
+python agentless/repair/repair.py --loc_file results/swe-bench-lite/edit_location_individual/loc_merged_1-1_outputs.jsonl --output_folder results/swe-bench-lite/repair_sample_2 --loc_interval --top_n=3 --context_window=10 --max_samples 10  --cot --diff_format --gen_and_process --num_threads 10 --backend "vllm/http://0.0.0.0:8000/v1" --model "open-thoughts/OpenThinker-7B"
+python agentless/repair/repair.py --loc_file results/swe-bench-lite/edit_location_individual/loc_merged_2-2_outputs.jsonl --output_folder results/swe-bench-lite/repair_sample_3 --loc_interval --top_n=3 --context_window=10 --max_samples 10  --cot --diff_format --gen_and_process --num_threads 10 --backend "vllm/http://0.0.0.0:8000/v1" --model "open-thoughts/OpenThinker-7B"
+python agentless/repair/repair.py --loc_file results/swe-bench-lite/edit_location_individual/loc_merged_3-3_outputs.jsonl --output_folder results/swe-bench-lite/repair_sample_4 --loc_interval --top_n=3 --context_window=10 --max_samples 10  --cot --diff_format --gen_and_process --num_threads 10 --backend "vllm/http://0.0.0.0:8000/v1" --model "open-thoughts/OpenThinker-7B"
+
